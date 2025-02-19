@@ -8,21 +8,23 @@ canvas.height = window.innerHeight;
 
 // 烟花粒子类
 class Particle {
-    constructor(x, y, color) {
+    constructor(x, y, color, angle, speed) {
         this.x = x;
         this.y = y;
         this.color = color;
-        this.size = Math.random() * 3 + 1;
-        this.speedX = (Math.random() - 0.5) * 4;
-        this.speedY = Math.random() * -8 - 5;
+        this.size = Math.random() * 2 + 1;
+        this.angle = angle;
+        this.speed = speed;
         this.alpha = 1;
+        this.gravity = 0.05;
     }
 
     update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        this.speedY += 0.2;
-        this.alpha -= 0.01;
+        // 根据角度和速度更新粒子位置
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
+        this.speed -= this.gravity;
+        this.alpha -= 0.02;
     }
 
     draw() {
@@ -43,9 +45,20 @@ class Firework {
         this.y = canvas.height;
         this.targetY = Math.random() * canvas.height * 0.3;
         this.speedY = Math.random() * 5 + 3;
-        this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        this.color = this.getRandomColor();
         this.exploded = false;
         this.particles = [];
+    }
+
+    // 获取随机颜色，增加颜色的多样性
+    getRandomColor() {
+        const colors = [
+            `hsl(${Math.random() * 360}, 100%, 50%)`,
+            `hsl(${Math.random() * 360}, 100%, 60%)`,
+            `hsl(${Math.random() * 360}, 100%, 70%)`,
+            `hsl(${Math.random() * 360}, 100%, 80%)`
+        ];
+        return colors[Math.floor(Math.random() * colors.length)];
     }
 
     update() {
@@ -53,8 +66,11 @@ class Firework {
             this.y -= this.speedY;
             if (this.y <= this.targetY) {
                 this.exploded = true;
-                for (let i = 0; i < 50; i++) {
-                    this.particles.push(new Particle(this.x, this.y, this.color));
+                const numParticles = Math.floor(Math.random() * 80) + 60; // 粒子数量随机化
+                for (let i = 0; i < numParticles; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 3 + 1;
+                    this.particles.push(new Particle(this.x, this.y, this.color, angle, speed));
                 }
             }
         } else {
@@ -89,7 +105,7 @@ function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // 随机创建新的烟花
-    if (Math.random() < 0.02) {
+    if (Math.random() < 0.03) {
         fireworks.push(new Firework());
     }
 
